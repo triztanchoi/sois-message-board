@@ -287,7 +287,7 @@
   }
   .game-win{text-align:center; margin-top:24px;}
 
-  /* BOARD SCREEN & UPLOAD */
+  /* BOARD SCREEN */
   .board-wrap{width:100%; max-width:560px;}
   .board-top{display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:22px;}
   .back-btn{
@@ -322,15 +322,6 @@
   }
   .entry-msg{font-size:15px; line-height:1.6; color:var(--ink); font-family:'Fraunces', serif; font-style:italic;}
 
-  .upload-box{
-    background:var(--card);
-    border-radius:8px;
-    padding:20px;
-    box-shadow:var(--shadow);
-    margin-top:24px;
-    margin-bottom:24px;
-    border:1px dashed var(--sepia);
-  }
   .fav-preset-grid{
     display:grid;
     grid-template-columns:repeat(2, 1fr);
@@ -340,6 +331,7 @@
   .fav-preset-item{
     background:var(--card); border-radius:8px; overflow:hidden;
     box-shadow:0 4px 12px rgba(43,38,32,0.12); position:relative;
+    display:flex; flex-direction:column; justify-content:space-between;
   }
   .fav-preset-item img{width:100%; display:block;}
   .fav-preset-caption{
@@ -397,7 +389,7 @@
   </div>
 </section>
 
-<!-- MESSAGE BOARD & LIVE PHOTO SCREEN -->
+<!-- MESSAGE BOARD SCREEN -->
 <section id="board-screen" class="screen">
   <div class="board-wrap">
     <div class="board-top">
@@ -407,15 +399,6 @@
     <p class="sub" id="board-subtitle" style="text-align:left; margin-top:4px; margin-bottom:24px;"></p>
 
     <div id="entries" class="entries"></div>
-
-    <!-- UPLOAD BOX (MOVED BELOW PHOTO GRID) -->
-    <div class="upload-box" id="upload-box" style="display:none;">
-      <label>Upload a Photo</label>
-      <input type="file" id="file-input" accept="image/*" style="margin-bottom:10px;">
-      <textarea id="file-caption" placeholder="Add a caption..." rows="2"></textarea>
-      <button class="btn btn-primary" id="upload-btn" style="margin-top:10px;">Post Photo for Everyone</button>
-      <div id="upload-status" style="font-size:12px; margin-top:8px; color:var(--sepia);"></div>
-    </div>
   </div>
 </section>
 
@@ -440,9 +423,6 @@
 </section>
 
 <script>
-// IMGBB API KEY
-const IMGBB_API_KEY = 'a328ed1730cef6c4eef4d756d71b99b8';
-
 const SECTIONS = [
   { id:'sad', label:"Are you sad?", emoji:'🙁', c1:'#D8E1E3', c2:'#A9C1C6', messages:["Hmmm, what could my baby possibly be sad about... :(((. I know you get sad sometimes, even if you don't say it , I can just guess based on your tone. We've talked many times about various things, and one of my favorites is your rants about the different scenarios throughout your day. I even noticed that sometimes you like to add a little joke at the end of your rants . Maybe you just want to lighten things up a bit, and of course, that is alright, but I want you to know that you never have to take things less seriously naman . Whatever it is that makes you feel sad, you have every right to feel that way.", "Do you feel sad because of someone or something? Tell me about itt, maybe i can cheer you up, hehe . The feeling of sadness doesn't linger forever, but it surely happens from time to time . Whenever those times come, always remember to look on the brighter side of things, and maybe it wasn't so bad after all :)). One thing I like to do whenever I 'm sad is listen to sad music, and if I cry , the feeling of sadness doesn 't stay that much na. You even mentioned dati that you also liked doing it, but with reading naman, and I think that is a really great way to release the feelings that you carry. Most importantly, you can always talk to me and tell me about anything, mahal ko, I love you so much."] },
   { id:'stressed', label:"Are you stressed?", emoji:'😓', c1:'#DCE3D5', c2:'#AEC0A2', messages:["Helloooo , mahal koooo! Huhu, are you stressed about something ? Take a break muna from what you are doing and rest muna sandali . Share ko lang sa'yo , alam mo ba na kapag umiiyak ako nung bata ako, pini-pinch ko yung ilong ko para pag naluluha ako, parang napipigil kasi naiipit yung ilong ko kaya para akong natatawa, Tapos parang mawawala na yung iyak ko kasi matatawa na lang ako HAHAHAHA. Pero anyway, mahal, if you are stressed out about something, whether it's studies, responsibilities, or even about yourself, try to slow down because you don't have to solve everything naman at the same time . Try to take little steps lang, kasi you might get overwhelmed with the current situation, and always remember to take a rest din .", "Please reach out to me if you need anything, I am always here for you, and I will never go away. So if you're stressed, mahal ko, take a little break and you can see the big difference it has . You 're allowed to feel anything that is going on with you. Always be kind and gentle to yourself because you did soooooo great just to be in your position today. I'm so proud of youuu mwamwa, I LOVE YOUU."] },
@@ -558,15 +538,12 @@ function openBoard(sec){
   wrap.innerHTML = '';
 
   if(sec.id === 'favorites'){
-    $('#board-subtitle').textContent = "Upload and share your favorite photos!";
+    $('#board-subtitle').textContent = "A collection of special photos and memories.";
 
-    // 1. Render photo grid FIRST
     const presetGrid = document.createElement('div');
     presetGrid.className = 'fav-preset-grid';
-    presetGrid.id = 'live-photos-grid';
     wrap.appendChild(presetGrid);
 
-    // Pre-loaded Favorites
     PRESET_FAVORITES.forEach(item => {
       const div = document.createElement('div');
       div.className = 'fav-preset-item';
@@ -577,26 +554,7 @@ function openBoard(sec){
       presetGrid.appendChild(div);
     });
 
-    // Stored Uploads from LocalStorage
-    const stored = JSON.parse(localStorage.getItem('user_uploaded_photos') || '[]');
-    stored.forEach(item => {
-      const div = document.createElement('div');
-      div.className = 'fav-preset-item';
-      div.innerHTML = `
-        <img src="${item.src}" alt="Uploaded Photo">
-        <div class="fav-preset-caption">
-          <strong>${item.uploader}:</strong> ${item.caption || ''}
-        </div>
-      `;
-      presetGrid.prepend(div);
-    });
-
-    // 2. Render Upload Box BELOW photos
-    const uploadBox = $('#upload-box');
-    uploadBox.style.display = 'block';
-
   } else {
-    $('#upload-box').style.display = 'none';
     $('#board-subtitle').textContent = 'Take your time reading these.';
     sec.messages.forEach(msg => {
       const div = document.createElement('div');
@@ -607,63 +565,6 @@ function openBoard(sec){
   }
   showScreen('#board-screen');
 }
-
-/* IMGBB DIRECT UPLOAD HANDLER */
-$('#upload-btn').addEventListener('click', async () => {
-  const fileInput = $('#file-input');
-  const caption = $('#file-caption').value.trim();
-  const status = $('#upload-status');
-
-  if (!fileInput.files[0]) {
-    status.textContent = 'Please select an image file first.';
-    return;
-  }
-
-  status.textContent = 'Uploading... Please wait.';
-
-  const formData = new FormData();
-  formData.append('image', fileInput.files[0]);
-
-  try {
-    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-      method: 'POST',
-      body: formData
-    });
-    const result = await response.json();
-
-    if (!result.success) throw new Error('Upload failed');
-
-    const imageUrl = result.data.url;
-
-    const newPhoto = {
-      uploader: currentUserName,
-      src: imageUrl,
-      caption: caption
-    };
-
-    let savedPhotos = JSON.parse(localStorage.getItem('user_uploaded_photos') || '[]');
-    savedPhotos.unshift(newPhoto);
-    localStorage.setItem('user_uploaded_photos', JSON.stringify(savedPhotos));
-
-    const grid = $('#live-photos-grid');
-    const div = document.createElement('div');
-    div.className = 'fav-preset-item';
-    div.innerHTML = `
-      <img src="${imageUrl}" alt="Uploaded Photo">
-      <div class="fav-preset-caption">
-        <strong>${currentUserName}:</strong> ${caption || ''}
-      </div>
-    `;
-    grid.prepend(div);
-
-    status.textContent = 'Uploaded successfully!';
-    fileInput.value = '';
-    $('#file-caption').value = '';
-  } catch (error) {
-    console.error(error);
-    status.textContent = 'Upload failed. Check your API key.';
-  }
-});
 
 $('#back-btn').addEventListener('click', () => showScreen('#gallery-screen'));
 
