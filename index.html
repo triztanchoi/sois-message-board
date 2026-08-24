@@ -327,6 +327,7 @@
     border-radius:8px;
     padding:20px;
     box-shadow:var(--shadow);
+    margin-top:24px;
     margin-bottom:24px;
     border:1px dashed var(--sepia);
   }
@@ -405,7 +406,9 @@
     <h2 class="board-title" id="board-title"></h2>
     <p class="sub" id="board-subtitle" style="text-align:left; margin-top:4px; margin-bottom:24px;"></p>
 
-    <!-- UPLOAD BOX (VISIBLE ON FAVORITES BOARD ONLY) -->
+    <div id="entries" class="entries"></div>
+
+    <!-- UPLOAD BOX (MOVED BELOW PHOTO GRID) -->
     <div class="upload-box" id="upload-box" style="display:none;">
       <label>Upload a Photo</label>
       <input type="file" id="file-input" accept="image/*" style="margin-bottom:10px;">
@@ -413,8 +416,6 @@
       <button class="btn btn-primary" id="upload-btn" style="margin-top:10px;">Post Photo for Everyone</button>
       <div id="upload-status" style="font-size:12px; margin-top:8px; color:var(--sepia);"></div>
     </div>
-
-    <div id="entries" class="entries"></div>
   </div>
 </section>
 
@@ -439,9 +440,7 @@
 </section>
 
 <script>
-// =========================================================
-// IMGBB API KEY INCLUDED BELOW
-// =========================================================
+// IMGBB API KEY
 const IMGBB_API_KEY = 'a328ed1730cef6c4eef4d756d71b99b8';
 
 const SECTIONS = [
@@ -560,14 +559,14 @@ function openBoard(sec){
 
   if(sec.id === 'favorites'){
     $('#board-subtitle').textContent = "Upload and share your favorite photos!";
-    $('#upload-box').style.display = 'block';
 
+    // 1. Render photo grid FIRST
     const presetGrid = document.createElement('div');
     presetGrid.className = 'fav-preset-grid';
     presetGrid.id = 'live-photos-grid';
     wrap.appendChild(presetGrid);
 
-    // 1. Render Pre-loaded Favorites
+    // Pre-loaded Favorites
     PRESET_FAVORITES.forEach(item => {
       const div = document.createElement('div');
       div.className = 'fav-preset-item';
@@ -578,7 +577,7 @@ function openBoard(sec){
       presetGrid.appendChild(div);
     });
 
-    // 2. Render Stored Uploads from LocalStorage
+    // Stored Uploads from LocalStorage
     const stored = JSON.parse(localStorage.getItem('user_uploaded_photos') || '[]');
     stored.forEach(item => {
       const div = document.createElement('div');
@@ -591,6 +590,10 @@ function openBoard(sec){
       `;
       presetGrid.prepend(div);
     });
+
+    // 2. Render Upload Box BELOW photos
+    const uploadBox = $('#upload-box');
+    uploadBox.style.display = 'block';
 
   } else {
     $('#upload-box').style.display = 'none';
